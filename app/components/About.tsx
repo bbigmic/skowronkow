@@ -1,10 +1,14 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { Check, Users, Home, Shield, Leaf, Car } from 'lucide-react'
 
 const About = () => {
+  const [isVisible, setIsVisible] = useState(false)
+  const [visibleFeatures, setVisibleFeatures] = useState<boolean[]>(new Array(5).fill(false))
+  const sectionRef = useRef<HTMLElement>(null)
+
   const features = [
     {
       icon: Home,
@@ -33,8 +37,42 @@ const About = () => {
     }
   ]
 
+  // Intersection Observer for animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true)
+            // Animate features one by one
+            features.forEach((_, index) => {
+              setTimeout(() => {
+                setVisibleFeatures(prev => {
+                  const newState = [...prev]
+                  newState[index] = true
+                  return newState
+                })
+              }, index * 200) // 200ms delay between each feature
+            })
+          }
+        })
+      },
+      { threshold: 0.2 }
+    )
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current)
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current)
+      }
+    }
+  }, [])
+
   return (
-    <section id="about" className="relative py-20 bg-gray-50 overflow-hidden">
+    <section ref={sectionRef} id="about" className="relative py-20 bg-gray-50 overflow-hidden">
       {/* Tło fixed */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -60,7 +98,9 @@ const About = () => {
 
       <div className="container-max section-padding relative z-10">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className={`text-center mb-16 transition-all duration-1000 ease-out ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+        }`}>
           <h2 className="heading-lg text-gray-900 mb-6">
             O inwestycji
           </h2>
@@ -79,7 +119,9 @@ const About = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
+        <div className={`grid lg:grid-cols-2 gap-16 items-center mb-20 transition-all duration-1000 ease-out delay-200 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+        }`}>
           {/* Content */}
           <div>
             <div className="space-y-6 mb-8">
@@ -118,7 +160,11 @@ const About = () => {
             return (
               <div 
                 key={index}
-                className="text-center p-6 bg-white/95 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                className={`text-center p-6 bg-white/95 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-lg transition-all duration-600 ease-out hover:-translate-y-1 ${
+                  visibleFeatures[index] 
+                    ? 'opacity-100 translate-y-0 scale-100' 
+                    : 'opacity-0 translate-y-3 scale-98'
+                }`}
               >
                 <div className="w-16 h-16 bg-primary-100 rounded-xl mx-auto mb-4 flex items-center justify-center">
                   <Icon className="text-primary-600" size={28} />

@@ -4,7 +4,7 @@ import React from 'react'
 import Hero from './components/Hero'
 import About from './components/About'
 import Location from './components/Location'
-import Offer from './components/Offer'
+import OfferDatabase from './components/OfferDatabase'
 import Gallery from './components/Gallery'
 import Contact from './components/Contact'
 import Navigation from './components/Navigation'
@@ -16,7 +16,7 @@ export default function Home() {
       <Hero />
       <About />
       <Location />
-      <Offer />
+      <OfferDatabase />
       <Gallery />
       <Contact />
     </main>

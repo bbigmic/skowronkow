@@ -1,10 +1,14 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { MapPin, Clock, Bus, ShoppingCart, Church, Baby, BookOpen, Stethoscope, Pill } from 'lucide-react'
 import LocationMap from './LocationMap'
 
 const Location = () => {
+  const [isVisible, setIsVisible] = useState(false)
+  const [visibleFeatures, setVisibleFeatures] = useState<boolean[]>(new Array(6).fill(false))
+  const sectionRef = useRef<HTMLElement>(null)
+
   const locationFeatures = [
     {
       icon: ShoppingCart,
@@ -38,6 +42,40 @@ const Location = () => {
     }
   ]
 
+  // Intersection Observer for animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true)
+            // Animate features one by one
+            locationFeatures.forEach((_, index) => {
+              setTimeout(() => {
+                setVisibleFeatures(prev => {
+                  const newState = [...prev]
+                  newState[index] = true
+                  return newState
+                })
+              }, index * 150) // 150ms delay between each feature
+            })
+          }
+        })
+      },
+      { threshold: 0.2 }
+    )
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current)
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current)
+      }
+    }
+  }, [])
+
   const scrollToContact = () => {
     const contactSection = document.getElementById('contact')
     if (contactSection) {
@@ -46,10 +84,12 @@ const Location = () => {
   }
 
   return (
-    <section id="location" className="py-20 bg-transparent">
+    <section ref={sectionRef} id="location" className="py-20 bg-transparent">
       <div className="container-max section-padding">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className={`text-center mb-16 transition-all duration-1000 ease-out ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+        }`}>
           <h2 className="heading-lg text-gray-900 mb-6">
             Lokalizacja
           </h2>
@@ -59,7 +99,9 @@ const Location = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-1 gap-16 items-start mb-16">
+        <div className={`grid lg:grid-cols-1 gap-16 items-start mb-16 transition-all duration-1000 ease-out delay-200 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+        }`}>
           {/* Interactive Map */}
           <div className="relative w-full h-96 rounded-2xl overflow-hidden shadow-lg bg-gray-100">
             <LocationMap className="rounded-2xl" />
@@ -73,7 +115,11 @@ const Location = () => {
             return (
               <div 
                 key={index}
-                className="bg-white border border-gray-200 rounded-lg sm:rounded-xl lg:rounded-xl p-3 sm:p-4 lg:p-6 hover:shadow-md sm:hover:shadow-lg lg:hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-center"
+                className={`bg-white border border-gray-200 rounded-lg sm:rounded-xl lg:rounded-xl p-3 sm:p-4 lg:p-6 hover:shadow-md sm:hover:shadow-lg lg:hover:shadow-lg transition-all duration-600 ease-out hover:-translate-y-1 text-center ${
+                  visibleFeatures[index] 
+                    ? 'opacity-100 translate-y-0 scale-100' 
+                    : 'opacity-0 translate-y-3 scale-98'
+                }`}
               >
                 <div className="flex flex-col items-center space-y-2 sm:space-y-3 lg:space-y-3 lg:mb-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 bg-primary-100 rounded-lg flex items-center justify-center">
@@ -92,7 +138,9 @@ const Location = () => {
         </div>
 
         {/* Call to Action */}
-        <div className="text-center mt-16">
+        <div className={`text-center mt-16 transition-all duration-1000 ease-out delay-300 ${
+          isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+        }`}>
         <div className="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-2xl p-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
               Przekonaj się sam

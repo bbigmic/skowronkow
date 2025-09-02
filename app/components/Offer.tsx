@@ -143,6 +143,79 @@ const Offer = () => {
     }
   }
 
+  const getStatsForCurrentView = () => {
+    if (currentView === 'overview') {
+      // Statystyki ogólne osiedla
+      return [
+        { value: '45/87', label: 'Mieszkań dostępnych' },
+        { value: '1-4', label: 'Pokoje' },
+        { value: '25-82', label: 'm² powierzchni' },
+        { value: '2', label: 'Bloki mieszkalne' }
+      ]
+    } else if (currentView === 'block' && selectedBlock) {
+      // Statystyki dla konkretnego bloku
+      const blockApartments = Object.keys(apartmentsData)
+        .filter(key => key.startsWith(selectedBlock))
+        .flatMap(key => apartmentsData[key])
+      
+      const totalApartments = blockApartments.length
+      const floors = ['parter', 'pietro1', 'pietro2', 'piwnica']
+      const totalFloors = floors.length
+      const minArea = Math.min(...blockApartments.map(apt => apt.area))
+      const maxArea = Math.max(...blockApartments.map(apt => apt.area))
+      const minRooms = Math.min(...blockApartments.map(apt => apt.rooms))
+      const maxRooms = Math.max(...blockApartments.map(apt => apt.rooms))
+
+      return [
+        { value: totalApartments.toString(), label: 'Mieszkań w bloku' },
+        { value: totalFloors.toString(), label: 'Pięter' },
+        { value: `${minArea}-${maxArea}`, label: 'm² powierzchni' },
+        { value: `${minRooms}-${maxRooms}`, label: 'Pokoje' }
+      ]
+    } else if (currentView === 'floor' && selectedBlock && selectedFloor) {
+      // Statystyki dla konkretnego piętra
+      const floorApartments = apartmentsData[`${selectedBlock}-${selectedFloor}`] || []
+      const totalApartments = floorApartments.length
+      
+      if (totalApartments === 0) {
+        return [
+          { value: '0', label: 'Mieszkań na piętrze' },
+          { value: '-', label: 'Średnia powierzchnia' },
+          { value: '-', label: 'Pokoje' },
+          { value: getFloorName(selectedFloor), label: 'Piętro' }
+        ]
+      }
+
+      const avgArea = Math.round(floorApartments.reduce((sum, apt) => sum + apt.area, 0) / totalApartments)
+      const minRooms = Math.min(...floorApartments.map(apt => apt.rooms))
+      const maxRooms = Math.max(...floorApartments.map(apt => apt.rooms))
+      const roomsRange = minRooms === maxRooms ? minRooms.toString() : `${minRooms}-${maxRooms}`
+
+      return [
+        { value: totalApartments.toString(), label: 'Mieszkań na piętrze' },
+        { value: `${avgArea}`, label: 'Średnia powierzchnia (m²)' },
+        { value: roomsRange, label: 'Pokoje' },
+        { value: getFloorName(selectedFloor), label: 'Piętro' }
+      ]
+    } else if (currentView === 'apartment' && selectedApartment) {
+      // Statystyki dla konkretnego mieszkania
+      return [
+        { value: selectedApartment.area.toString(), label: 'Powierzchnia (m²)' },
+        { value: selectedApartment.rooms.toString(), label: 'Pokoje' },
+        { value: getFloorName(selectedApartment.floor), label: 'Piętro' },
+        { value: selectedApartment.block === 'blok1' ? 'Blok 1' : 'Blok 2', label: 'Blok' }
+      ]
+    }
+
+    // Fallback - statystyki ogólne
+    return [
+      { value: '45/87', label: 'Mieszkań dostępnych' },
+      { value: '1-4', label: 'Pokoje' },
+      { value: '25-82', label: 'm² powierzchni' },
+      { value: '2', label: 'Bloki mieszkalne' }
+    ]
+  }
+
   // Synchronizacja hover efektów między kształtami a etykietami
   useEffect(() => {
     if (currentView === 'overview') {
@@ -1399,24 +1472,14 @@ const Offer = () => {
           )}
         </div>
 
-        {/* Stats */}
+        {/* Dynamic Stats */}
         <div className="grid md:grid-cols-4 gap-8 mt-16">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-primary-600 mb-2">45/87</div>
-            <div className="text-gray-600">Mieszkań dostępnych</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-primary-600 mb-2">1-4</div>
-            <div className="text-gray-600">Pokoje</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-primary-600 mb-2">25-82</div>
-            <div className="text-gray-600">m² powierzchni</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-primary-600 mb-2">2</div>
-            <div className="text-gray-600">Bloki mieszkalne</div>
-          </div>
+          {getStatsForCurrentView().map((stat, index) => (
+            <div key={index} className="text-center">
+              <div className="text-3xl font-bold text-primary-600 mb-2">{stat.value}</div>
+              <div className="text-gray-600">{stat.label}</div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
