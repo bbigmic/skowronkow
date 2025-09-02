@@ -19,7 +19,7 @@ const About = () => {
     {
       icon: Shield,
       title: 'Bezpieczeństwo',
-      description: 'Monitoring, ochrona oraz kontrola dostępu zapewniają pełne bezpieczeństwo'
+      description: 'Osiedle zamknięte z bramą wjazdową i furtką zapewnia bezpieczeństwo i prywatność'
     },
     {
       icon: Leaf,
