@@ -449,9 +449,9 @@ const Offer = () => {
               
               {/* Tytuł "Wybierz blok" na zdjęciu */}
               {currentView === 'overview' && (
-                <div className="absolute top-8 left-1/2 transform -translate-x-1/2 pointer-events-none">
-                  <div className="bg-white/95 backdrop-blur-sm rounded-xl px-6 py-3 shadow-lg">
-                    <h3 className="text-2xl md:text-3xl font-bold text-gray-900 text-center">
+                <div className="absolute top-4 sm:top-8 left-1/2 transform -translate-x-1/2 pointer-events-none">
+                  <div className="bg-white/95 backdrop-blur-sm rounded-lg sm:rounded-xl px-4 sm:px-6 py-2 sm:py-3 shadow-lg">
+                    <h3 className="text-3xl sm:text-3xl md:text-3xl lg:text-3xl font-bold text-gray-900 text-center whitespace-nowrap">
                       Wybierz blok
                     </h3>
                   </div>
@@ -495,8 +495,8 @@ const Offer = () => {
                       onClick={() => handleBlockSelect('blok1')}
                       className="absolute bg-transparent hover:bg-primary-500/10 cursor-pointer transition-all duration-300 group pointer-events-auto"
                       style={{
-                        top: 'calc(65.5% + 18%)', // Pozycja względem kształtu Blok 1
-                        left: 'calc(16% + 23.5% / 2)', // Centrum kształtu Blok 1
+                        top: 'calc(70% + 20%)', // Pozycja względem kształtu Blok 1
+                        left: 'calc(6% + 23.5% / 2)', // Centrum kształtu Blok 1
                         transform: 'translate(-50%, -50%)',
                         zIndex: 5
                       }}
@@ -511,8 +511,8 @@ const Offer = () => {
                       onClick={() => handleBlockSelect('blok2')}
                       className="absolute bg-transparent hover:bg-primary-500/10 cursor-pointer transition-all duration-300 group pointer-events-auto"
                       style={{
-                        top: 'calc(50% + 20%)', // Pozycja względem kształtu Blok 2
-                        left: 'calc(70% + 10% / 2)', // Centrum kształtu Blok 2
+                        top: 'calc(70% + 20%)', // Pozycja względem kształtu Blok 2
+                        left: 'calc(75% + 10% / 2)', // Centrum kształtu Blok 2
                         transform: 'translate(-50%, -50%)',
                         zIndex: 5
                       }}
