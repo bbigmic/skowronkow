@@ -512,7 +512,7 @@ const Offer = () => {
                       className="absolute bg-transparent hover:bg-primary-500/10 cursor-pointer transition-all duration-300 group pointer-events-auto"
                       style={{
                         top: 'calc(70% + 20%)', // Pozycja względem kształtu Blok 2
-                        left: 'calc(75% + 10% / 2)', // Centrum kształtu Blok 2
+                        left: 'calc(72% + 10% / 2)', // Centrum kształtu Blok 2
                         transform: 'translate(-50%, -50%)',
                         zIndex: 5
                       }}
