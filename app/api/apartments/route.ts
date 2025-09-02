@@ -8,9 +8,9 @@ export async function GET(request: Request) {
     
     let apartments;
     if (available === 'true') {
-      apartments = getAvailableApartments();
+      apartments = await getAvailableApartments();
     } else {
-      apartments = getAllApartments();
+      apartments = await getAllApartments();
     }
 
     return NextResponse.json(apartments);

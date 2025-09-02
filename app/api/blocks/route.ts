@@ -3,7 +3,7 @@ import { getAllBlocks } from '@/lib/database';
 
 export async function GET() {
   try {
-    const blocks = getAllBlocks();
+    const blocks = await getAllBlocks();
     return NextResponse.json(blocks);
   } catch (error) {
     console.error('Error fetching blocks:', error);
