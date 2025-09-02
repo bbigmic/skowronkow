@@ -67,22 +67,22 @@ const Location = () => {
         </div>
 
         {/* Features Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 lg:gap-8">
           {locationFeatures.map((category, index) => {
             const Icon = category.icon
             return (
               <div 
                 key={index}
-                className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-center"
+                className="bg-white border border-gray-200 rounded-lg sm:rounded-xl lg:rounded-xl p-3 sm:p-4 lg:p-6 hover:shadow-md sm:hover:shadow-lg lg:hover:shadow-lg transition-all duration-300 hover:-translate-y-1 text-center"
               >
-                <div className="flex flex-col items-center space-y-3 mb-4">
-                  <div className="w-16 h-16 bg-primary-100 rounded-lg flex items-center justify-center">
-                    <Icon className="text-primary-600" size={28} />
+                <div className="flex flex-col items-center space-y-2 sm:space-y-3 lg:space-y-3 lg:mb-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <Icon className="text-primary-600" size={20} />
                   </div>
-                  <h4 className="text-lg font-semibold text-gray-900">
+                  <h4 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 leading-tight">
                     {category.title}
                   </h4>
-                  <p className="text-primary-600 font-medium">
+                  <p className="text-primary-600 font-medium text-xs sm:text-sm lg:text-base">
                     {category.distance}
                   </p>
                 </div>
