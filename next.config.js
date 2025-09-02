@@ -8,11 +8,13 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
-  experimental: {
-    optimizeCss: true,
-  },
+  // experimental: {
+  //   optimizeCss: true, // Wyłączone - powoduje błędy z critters w Next.js 14.2.32
+  // },
   compress: true,
   poweredByHeader: false,
+  output: 'standalone', // Dla Vercel
+  trailingSlash: false,
 }
 
 module.exports = nextConfig 
