@@ -162,6 +162,33 @@ const Offer = () => {
           blok1Shape.classList.add('bg-primary-500/20')
           }
         }
+        
+        // Synchronizacja z etykietą bloku
+        if (blok1Label) {
+          const labelDiv = blok1Label.querySelector('div')
+          if (labelDiv) {
+            if (isHovered) {
+              labelDiv.classList.add('scale-110')
+            } else {
+              labelDiv.classList.remove('scale-110')
+            }
+          }
+        }
+        
+        // Synchronizacja z etykietą daty
+        const blok1DateLabel = document.getElementById('blok1-date-label')
+        if (blok1DateLabel) {
+          const dateDiv = blok1DateLabel.querySelector('div')
+          if (dateDiv) {
+            if (isHovered) {
+              dateDiv.classList.add('bg-white', 'shadow-md', 'scale-105')
+              dateDiv.classList.remove('bg-white/80', 'shadow-sm')
+            } else {
+              dateDiv.classList.remove('bg-white', 'shadow-md', 'scale-105')
+              dateDiv.classList.add('bg-white/80', 'shadow-sm')
+            }
+          }
+        }
       }
 
       const setBlok2Hover = (isHovered: boolean) => {
@@ -172,6 +199,33 @@ const Offer = () => {
           } else {
             blok2Shape.classList.remove('bg-primary-500/40')
           blok2Shape.classList.add('bg-primary-500/20')
+          }
+        }
+        
+        // Synchronizacja z etykietą bloku
+        if (blok2Label) {
+          const labelDiv = blok2Label.querySelector('div')
+          if (labelDiv) {
+            if (isHovered) {
+              labelDiv.classList.add('scale-110')
+            } else {
+              labelDiv.classList.remove('scale-110')
+            }
+          }
+        }
+        
+        // Synchronizacja z etykietą daty
+        const blok2DateLabel = document.getElementById('blok2-date-label')
+        if (blok2DateLabel) {
+          const dateDiv = blok2DateLabel.querySelector('div')
+          if (dateDiv) {
+            if (isHovered) {
+              dateDiv.classList.add('bg-white', 'shadow-md', 'scale-105')
+              dateDiv.classList.remove('bg-white/80', 'shadow-sm')
+            } else {
+              dateDiv.classList.remove('bg-white', 'shadow-md', 'scale-105')
+              dateDiv.classList.add('bg-white/80', 'shadow-sm')
+            }
           }
         }
       }
@@ -198,6 +252,19 @@ const Offer = () => {
         blok2Label.addEventListener('mouseleave', () => setBlok2Hover(false))
       }
 
+      // Event listeners dla etykiet dat
+      const blok1DateLabel = document.getElementById('blok1-date-label')
+      if (blok1DateLabel) {
+        blok1DateLabel.addEventListener('mouseenter', () => setBlok1Hover(true))
+        blok1DateLabel.addEventListener('mouseleave', () => setBlok1Hover(false))
+      }
+
+      const blok2DateLabel = document.getElementById('blok2-date-label')
+      if (blok2DateLabel) {
+        blok2DateLabel.addEventListener('mouseenter', () => setBlok2Hover(true))
+        blok2DateLabel.addEventListener('mouseleave', () => setBlok2Hover(false))
+      }
+
       return () => {
         // Cleanup event listeners
         if (blok1Shape) {
@@ -215,6 +282,14 @@ const Offer = () => {
         if (blok2Label) {
           blok2Label.removeEventListener('mouseenter', () => setBlok2Hover(true))
           blok2Label.removeEventListener('mouseleave', () => setBlok2Hover(false))
+        }
+        if (blok1DateLabel) {
+          blok1DateLabel.removeEventListener('mouseenter', () => setBlok1Hover(true))
+          blok1DateLabel.removeEventListener('mouseleave', () => setBlok1Hover(false))
+        }
+        if (blok2DateLabel) {
+          blok2DateLabel.removeEventListener('mouseenter', () => setBlok2Hover(true))
+          blok2DateLabel.removeEventListener('mouseleave', () => setBlok2Hover(false))
         }
       }
     } else if (currentView === 'block' && selectedBlock) {
@@ -519,6 +594,39 @@ const Offer = () => {
                     >
                       <div className="bg-primary-600 text-white font-bold text-lg px-3 py-1 rounded shadow-lg transform group-hover:scale-110 transition-transform duration-300 pointer-events-auto">
                         Blok 2
+                      </div>
+                    </button>
+
+                    {/* Informacje o terminach oddania */}
+                    <button
+                      id="blok1-date-label"
+                      onClick={() => handleBlockSelect('blok1')}
+                      className="absolute pointer-events-auto cursor-pointer"
+                      style={{
+                        top: 'calc(65.5% - 5%)', // Nad Blok 1
+                        left: 'calc(16% + 23.5% / 2)', // Centrum Blok 1
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 5
+                      }}
+                    >
+                      <div className="bg-white/80 backdrop-blur-sm text-gray-700 font-medium text-xs px-2 py-1 rounded-md shadow-sm transition-all duration-300">
+                        Oddanie koniec 2026
+                      </div>
+                    </button>
+                    
+                    <button
+                      id="blok2-date-label"
+                      onClick={() => handleBlockSelect('blok2')}
+                      className="absolute pointer-events-auto cursor-pointer"
+                      style={{
+                        top: 'calc(65.5% - 5%)', // Nad Blok 2
+                        left: 'calc(60% + 10% / 2)', // Centrum Blok 2
+                        transform: 'translate(-50%, -50%)',
+                        zIndex: 5
+                      }}
+                    >
+                      <div className="bg-white/80 backdrop-blur-sm text-gray-700 font-medium text-xs px-2 py-1 rounded-md shadow-sm transition-all duration-300">
+                        Oddanie koniec 2027
                       </div>
                     </button>
                     
