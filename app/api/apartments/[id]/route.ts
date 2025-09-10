@@ -15,7 +15,7 @@ export async function GET(
       );
     }
 
-    const apartment = await getApartmentById(apartmentId);
+    const apartment = getApartmentById(apartmentId);
     if (!apartment) {
       return NextResponse.json(
         { error: 'Apartment not found' },
@@ -23,7 +23,7 @@ export async function GET(
       );
     }
 
-    const storageRooms = await getStorageRoomsByApartmentId(apartmentId);
+    const storageRooms = getStorageRoomsByApartmentId(apartmentId);
 
     return NextResponse.json({
       apartment,

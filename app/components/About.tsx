@@ -128,7 +128,7 @@ const About = () => {
 
               
               <p className="text-body text-gray-600">
-                <strong>Atrakcyjne położenie</strong>, bliskość terenów rekreacyjnych oraz korzystne połączenie z centrum sprawiają, że powstające osiedle będzie doskonałym miejscem dla wszystkich, którzy cenią sobie uroki ciszy i spokoju, a także swobodny dostęp do wszelkich udogodnień oferowanych przez tętniącą życiem aglomerację miejską. <a href="#location" className="text-primary-600"><strong>LOKALIZACJA</strong></a>
+                <strong>Atrakcyjne położenie</strong>, bliskość terenów zielonych oraz korzystne połączenie z centrum sprawiają, że powstające osiedle będzie doskonałym miejscem dla wszystkich, którzy cenią sobie uroki ciszy i spokoju, a także swobodny dostęp do wszelkich udogodnień oferowanych przez tętniącą życiem aglomerację miejską. <a href="#location" className="text-primary-600"><strong>LOKALIZACJA</strong></a>
               </p>
               
               <p className="text-body text-gray-600">
@@ -136,7 +136,7 @@ const About = () => {
               </p>
               
               <p className="text-body text-gray-600">
-                <strong>Osiedle SKOWRONKÓW</strong> realizowane jest wieloetapowo. W drugim etapie powstają dwa budynki, w których rozplanowano łącznie 48 apartamentów o metrażach od 40 mkw. do 80 mkw. Powierzchnia lokali oraz ich rozkład zostały tak zaprojektowane, aby nowi właściciele mogli zaaranżować wnętrza zgodnie ze swoimi potrzebami.
+                <strong>Osiedle SKOWRONKÓW</strong> realizowane jest wieloetapowo. Pierwsze dwa etapy budowy osiedla zostały zrealizowane, sprzedane i w pełni funkcjonują. W bieżącym, trzecim etapie powstaną dwa budynki wielorodzinne, w których zaplanowano łącznie 85 mieszkań o różnorodnym metrażu. Powierzchnia lokali oraz ich rozkład zostały tak zaprojektowane, aby nowi właściciele mogli zaaranżować wnętrza zgodnie ze swoimi potrzebami.
               </p>
             </div>
           </div>

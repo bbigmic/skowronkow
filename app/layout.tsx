@@ -6,6 +6,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://osiedle-skowronkow.com'),
   title: 'Osiedle Skowronków - Nowoczesne mieszkania w doskonałej lokalizacji',
   description: 'Odkryj swój wymarzony dom w Osiedlu Skowronków. Nowoczesne mieszkania w spokojnej okolicy z doskonałą komunikacją.',
   keywords: 'mieszkania, nowe osiedle, Skowronków, sprzedaż mieszkań, deweloper, Grupa Borys, borys, skowronków, Grupa Borys Deweloper',
@@ -15,6 +16,13 @@ export const metadata: Metadata = {
     description: 'Odkryj swój wymarzony dom w Osiedlu Skowronków',
     type: 'website',
     locale: 'pl_PL',
+    url: 'https://osiedle-skowronkow.com',
+    siteName: 'Osiedle Skowronków',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Osiedle Skowronków - Nowy wymiar domu',
+    description: 'Odkryj swój wymarzony dom w Osiedlu Skowronków',
   },
   robots: {
     index: true,

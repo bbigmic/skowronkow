@@ -1,13 +1,5 @@
-import { Pool } from 'pg';
-
-// Konfiguracja połączenia z PostgreSQL
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+import Database from 'better-sqlite3';
+import path from 'path';
 
 // Typy dla bazy danych
 export interface Block {
@@ -50,261 +42,233 @@ export interface StorageRoom {
   pdf_path: string | null;
 }
 
+// Singleton dla połączenia z bazą danych
+class DatabaseManager {
+  private static instance: DatabaseManager;
+  private db: Database.Database | null = null;
+
+  private constructor() {}
+
+  public static getInstance(): DatabaseManager {
+    if (!DatabaseManager.instance) {
+      DatabaseManager.instance = new DatabaseManager();
+    }
+    return DatabaseManager.instance;
+  }
+
+  public getDatabase(): Database.Database {
+    if (!this.db) {
+      const dbPath = path.join(process.cwd(), 'database', 'osiedle_skowronkow.db');
+      this.db = new Database(dbPath);
+      this.db.pragma('journal_mode = WAL');
+    }
+    return this.db;
+  }
+
+  public close(): void {
+    if (this.db) {
+      this.db.close();
+      this.db = null;
+    }
+  }
+}
+
+// Funkcje pomocnicze do obsługi bazy danych
+export const dbManager = DatabaseManager.getInstance();
+
 // Funkcje API dla bloków
-export async function getAllBlocks(): Promise<Block[]> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT * FROM blocks ORDER BY name');
-    return result.rows;
-  } finally {
-    client.release();
-  }
+export function getAllBlocks(): Block[] {
+  const db = dbManager.getDatabase();
+  const stmt = db.prepare('SELECT * FROM blocks ORDER BY name');
+  return stmt.all() as Block[];
 }
 
-export async function getBlockById(id: number): Promise<Block | null> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT * FROM blocks WHERE id = $1', [id]);
-    return result.rows[0] || null;
-  } finally {
-    client.release();
-  }
+export function getBlockById(id: number): Block | null {
+  const db = dbManager.getDatabase();
+  const stmt = db.prepare('SELECT * FROM blocks WHERE id = ?');
+  return stmt.get(id) as Block | null;
 }
 
-export async function getBlockByName(name: string): Promise<Block | null> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT * FROM blocks WHERE name = $1', [name]);
-    return result.rows[0] || null;
-  } finally {
-    client.release();
-  }
+export function getBlockByName(name: string): Block | null {
+  const db = dbManager.getDatabase();
+  const stmt = db.prepare('SELECT * FROM blocks WHERE name = ?');
+  return stmt.get(name) as Block | null;
 }
 
 // Funkcje API dla pięter
-export async function getFloorsByBlockId(blockId: number): Promise<Floor[]> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT * FROM floors WHERE block_id = $1 ORDER BY floor_number', [blockId]);
-    return result.rows;
-  } finally {
-    client.release();
-  }
+export function getFloorsByBlockId(blockId: number): Floor[] {
+  const db = dbManager.getDatabase();
+  const stmt = db.prepare('SELECT * FROM floors WHERE block_id = ? ORDER BY floor_number');
+  return stmt.all(blockId) as Floor[];
 }
 
-export async function getFloorById(id: number): Promise<Floor | null> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT * FROM floors WHERE id = $1', [id]);
-    return result.rows[0] || null;
-  } finally {
-    client.release();
-  }
+export function getFloorById(id: number): Floor | null {
+  const db = dbManager.getDatabase();
+  const stmt = db.prepare('SELECT * FROM floors WHERE id = ?');
+  return stmt.get(id) as Floor | null;
 }
 
 // Funkcje API dla mieszkań
-export async function getAllApartments(): Promise<Apartment[]> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query(`
-      SELECT a.*, f.floor_name, b.name as block_name
-      FROM apartments a
-      JOIN floors f ON a.floor_id = f.id
-      JOIN blocks b ON a.block_id = b.id
-      ORDER BY b.name, f.floor_number, a.apartment_number
-    `);
-    return result.rows;
-  } finally {
-    client.release();
-  }
+export function getAllApartments(): Apartment[] {
+  const db = dbManager.getDatabase();
+  const stmt = db.prepare(`
+    SELECT a.*, f.floor_name, b.name as block_name
+    FROM apartments a
+    JOIN floors f ON a.floor_id = f.id
+    JOIN blocks b ON a.block_id = b.id
+    ORDER BY b.name, f.floor_number, a.apartment_number
+  `);
+  return stmt.all() as Apartment[];
 }
 
-export async function getApartmentsByBlockId(blockId: number): Promise<Apartment[]> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query(`
-      SELECT a.*, f.floor_name, b.name as block_name
-      FROM apartments a
-      JOIN floors f ON a.floor_id = f.id
-      JOIN blocks b ON a.block_id = b.id
-      WHERE a.block_id = $1
-      ORDER BY f.floor_number, a.apartment_number
-    `, [blockId]);
-    return result.rows;
-  } finally {
-    client.release();
-  }
+export function getApartmentsByBlockId(blockId: number): Apartment[] {
+  const db = dbManager.getDatabase();
+  const stmt = db.prepare(`
+    SELECT a.*, f.floor_name, b.name as block_name
+    FROM apartments a
+    JOIN floors f ON a.floor_id = f.id
+    JOIN blocks b ON a.block_id = b.id
+    WHERE a.block_id = ?
+    ORDER BY f.floor_number, a.apartment_number
+  `);
+  return stmt.all(blockId) as Apartment[];
 }
 
-export async function getApartmentsByFloorId(floorId: number): Promise<Apartment[]> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query(`
-      SELECT a.*, f.floor_name, b.name as block_name
-      FROM apartments a
-      JOIN floors f ON a.floor_id = f.id
-      JOIN blocks b ON a.block_id = b.id
-      WHERE a.floor_id = $1
-      ORDER BY a.apartment_number
-    `, [floorId]);
-    return result.rows;
-  } finally {
-    client.release();
-  }
+export function getApartmentsByFloorId(floorId: number): Apartment[] {
+  const db = dbManager.getDatabase();
+  const stmt = db.prepare(`
+    SELECT a.*, f.floor_name, b.name as block_name
+    FROM apartments a
+    JOIN floors f ON a.floor_id = f.id
+    JOIN blocks b ON a.block_id = b.id
+    WHERE a.floor_id = ?
+    ORDER BY a.apartment_number
+  `);
+  return stmt.all(floorId) as Apartment[];
 }
 
-export async function getApartmentById(id: number): Promise<Apartment | null> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query(`
-      SELECT a.*, f.floor_name, b.name as block_name
-      FROM apartments a
-      JOIN floors f ON a.floor_id = f.id
-      JOIN blocks b ON a.block_id = b.id
-      WHERE a.id = $1
-    `, [id]);
-    return result.rows[0] || null;
-  } finally {
-    client.release();
-  }
+export function getApartmentById(id: number): Apartment | null {
+  const db = dbManager.getDatabase();
+  const stmt = db.prepare(`
+    SELECT a.*, f.floor_name, b.name as block_name
+    FROM apartments a
+    JOIN floors f ON a.floor_id = f.id
+    JOIN blocks b ON a.block_id = b.id
+    WHERE a.id = ?
+  `);
+  return stmt.get(id) as Apartment | null;
 }
 
-export async function getApartmentByNumber(blockId: number, apartmentNumber: string): Promise<Apartment | null> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query(`
-      SELECT a.*, f.floor_name, b.name as block_name
-      FROM apartments a
-      JOIN floors f ON a.floor_id = f.id
-      JOIN blocks b ON a.block_id = b.id
-      WHERE a.block_id = $1 AND a.apartment_number = $2
-    `, [blockId, apartmentNumber]);
-    return result.rows[0] || null;
-  } finally {
-    client.release();
-  }
+export function getApartmentByNumber(blockId: number, apartmentNumber: string): Apartment | null {
+  const db = dbManager.getDatabase();
+  const stmt = db.prepare(`
+    SELECT a.*, f.floor_name, b.name as block_name
+    FROM apartments a
+    JOIN floors f ON a.floor_id = f.id
+    JOIN blocks b ON a.block_id = b.id
+    WHERE a.block_id = ? AND a.apartment_number = ?
+  `);
+  return stmt.get(blockId, apartmentNumber) as Apartment | null;
 }
 
-export async function getAvailableApartments(): Promise<Apartment[]> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query(`
-      SELECT a.*, f.floor_name, b.name as block_name
-      FROM apartments a
-      JOIN floors f ON a.floor_id = f.id
-      JOIN blocks b ON a.block_id = b.id
-      WHERE a.status = 'available'
-      ORDER BY b.name, f.floor_number, a.apartment_number
-    `);
-    return result.rows;
-  } finally {
-    client.release();
-  }
+export function getAvailableApartments(): Apartment[] {
+  const db = dbManager.getDatabase();
+  const stmt = db.prepare(`
+    SELECT a.*, f.floor_name, b.name as block_name
+    FROM apartments a
+    JOIN floors f ON a.floor_id = f.id
+    JOIN blocks b ON a.block_id = b.id
+    WHERE a.status = 'available'
+    ORDER BY b.name, f.floor_number, a.apartment_number
+  `);
+  return stmt.all() as Apartment[];
 }
 
 // Funkcje API dla komórek
-export async function getStorageRoomsByApartmentId(apartmentId: number): Promise<StorageRoom[]> {
-  const client = await pool.connect();
-  try {
-    const result = await client.query('SELECT * FROM storage_rooms WHERE apartment_id = $1', [apartmentId]);
-    return result.rows;
-  } finally {
-    client.release();
-  }
+export function getStorageRoomsByApartmentId(apartmentId: number): StorageRoom[] {
+  const db = dbManager.getDatabase();
+  const stmt = db.prepare('SELECT * FROM storage_rooms WHERE apartment_id = ?');
+  return stmt.all(apartmentId) as StorageRoom[];
 }
 
 // Funkcje statystyk
-export async function getApartmentStats() {
-  const client = await pool.connect();
-  try {
-    const totalResult = await client.query('SELECT COUNT(*) as total FROM apartments');
-    const availableResult = await client.query("SELECT COUNT(*) as available FROM apartments WHERE status = 'available'");
-    const priceResult = await client.query('SELECT MIN(price) as min_price, MAX(price) as max_price, AVG(price) as avg_price FROM apartments WHERE price IS NOT NULL');
-    const areaResult = await client.query('SELECT MIN(area) as min_area, MAX(area) as max_area, AVG(area) as avg_area FROM apartments');
-    
-    const total = parseInt(totalResult.rows[0].total);
-    const available = parseInt(availableResult.rows[0].available);
-    const prices = priceResult.rows[0];
-    const areas = areaResult.rows[0];
-    
-    return {
-      total,
-      available,
-      unavailable: total - available,
-      minPrice: parseFloat(prices.min_price || 0),
-      maxPrice: parseFloat(prices.max_price || 0),
-      avgPrice: Math.round(parseFloat(prices.avg_price || 0)),
-      minArea: parseFloat(areas.min_area || 0),
-      maxArea: parseFloat(areas.max_area || 0),
-      avgArea: Math.round(parseFloat(areas.avg_area || 0) * 10) / 10
-    };
-  } finally {
-    client.release();
-  }
+export function getApartmentStats() {
+  const db = dbManager.getDatabase();
+  
+  const totalStmt = db.prepare('SELECT COUNT(*) as total FROM apartments');
+  const availableStmt = db.prepare("SELECT COUNT(*) as available FROM apartments WHERE status = 'available'");
+  const priceStmt = db.prepare('SELECT MIN(price) as min_price, MAX(price) as max_price, AVG(price) as avg_price FROM apartments WHERE price IS NOT NULL');
+  const areaStmt = db.prepare('SELECT MIN(area) as min_area, MAX(area) as max_area, AVG(area) as avg_area FROM apartments');
+  
+  const total = totalStmt.get() as { total: number };
+  const available = availableStmt.get() as { available: number };
+  const prices = priceStmt.get() as { min_price: number; max_price: number; avg_price: number };
+  const areas = areaStmt.get() as { min_area: number; max_area: number; avg_area: number };
+  
+  return {
+    total: total.total,
+    available: available.available,
+    unavailable: total.total - available.available,
+    minPrice: prices.min_price,
+    maxPrice: prices.max_price,
+    avgPrice: Math.round(prices.avg_price),
+    minArea: areas.min_area,
+    maxArea: areas.max_area,
+    avgArea: Math.round(areas.avg_area * 10) / 10
+  };
 }
 
-export async function getBlockStats(blockId: number) {
-  const client = await pool.connect();
-  try {
-    const totalResult = await client.query('SELECT COUNT(*) as total FROM apartments WHERE block_id = $1', [blockId]);
-    const availableResult = await client.query("SELECT COUNT(*) as available FROM apartments WHERE block_id = $1 AND status = 'available'", [blockId]);
-    const floorsResult = await client.query('SELECT COUNT(*) as floors FROM floors WHERE block_id = $1', [blockId]);
-    const priceResult = await client.query('SELECT MIN(price) as min_price, MAX(price) as max_price, AVG(price) as avg_price FROM apartments WHERE block_id = $1 AND price IS NOT NULL', [blockId]);
-    const areaResult = await client.query('SELECT MIN(area) as min_area, MAX(area) as max_area, AVG(area) as avg_area FROM apartments WHERE block_id = $1', [blockId]);
-    
-    const total = parseInt(totalResult.rows[0].total);
-    const available = parseInt(availableResult.rows[0].available);
-    const floors = parseInt(floorsResult.rows[0].floors);
-    const prices = priceResult.rows[0];
-    const areas = areaResult.rows[0];
-    
-    return {
-      total,
-      available,
-      unavailable: total - available,
-      floors,
-      minPrice: parseFloat(prices.min_price || 0),
-      maxPrice: parseFloat(prices.max_price || 0),
-      avgPrice: Math.round(parseFloat(prices.avg_price || 0)),
-      minArea: parseFloat(areas.min_area || 0),
-      maxArea: parseFloat(areas.max_area || 0),
-      avgArea: Math.round(parseFloat(areas.avg_area || 0) * 10) / 10
-    };
-  } finally {
-    client.release();
-  }
+export function getBlockStats(blockId: number) {
+  const db = dbManager.getDatabase();
+  
+  const totalStmt = db.prepare('SELECT COUNT(*) as total FROM apartments WHERE block_id = ?');
+  const availableStmt = db.prepare("SELECT COUNT(*) as available FROM apartments WHERE block_id = ? AND status = 'available'");
+  const floorsStmt = db.prepare('SELECT COUNT(*) as floors FROM floors WHERE block_id = ?');
+  const priceStmt = db.prepare('SELECT MIN(price) as min_price, MAX(price) as max_price, AVG(price) as avg_price FROM apartments WHERE block_id = ? AND price IS NOT NULL');
+  const areaStmt = db.prepare('SELECT MIN(area) as min_area, MAX(area) as max_area, AVG(area) as avg_area FROM apartments WHERE block_id = ?');
+  
+  const total = totalStmt.get(blockId) as { total: number };
+  const available = availableStmt.get(blockId) as { available: number };
+  const floors = floorsStmt.get(blockId) as { floors: number };
+  const prices = priceStmt.get(blockId) as { min_price: number; max_price: number; avg_price: number };
+  const areas = areaStmt.get(blockId) as { min_area: number; max_area: number; avg_area: number };
+  
+  return {
+    total: total.total,
+    available: available.available,
+    unavailable: total.total - available.available,
+    floors: floors.floors,
+    minPrice: prices.min_price,
+    maxPrice: prices.max_price,
+    avgPrice: Math.round(prices.avg_price),
+    minArea: areas.min_area,
+    maxArea: areas.max_area,
+    avgArea: Math.round(areas.avg_area * 10) / 10
+  };
 }
 
-export async function getFloorStats(floorId: number) {
-  const client = await pool.connect();
-  try {
-    const totalResult = await client.query('SELECT COUNT(*) as total FROM apartments WHERE floor_id = $1', [floorId]);
-    const availableResult = await client.query("SELECT COUNT(*) as available FROM apartments WHERE floor_id = $1 AND status = 'available'", [floorId]);
-    const priceResult = await client.query('SELECT MIN(price) as min_price, MAX(price) as max_price, AVG(price) as avg_price FROM apartments WHERE floor_id = $1 AND price IS NOT NULL', [floorId]);
-    const areaResult = await client.query('SELECT MIN(area) as min_area, MAX(area) as max_area, AVG(area) as avg_area FROM apartments WHERE floor_id = $1', [floorId]);
-    
-    const total = parseInt(totalResult.rows[0].total);
-    const available = parseInt(availableResult.rows[0].available);
-    const prices = priceResult.rows[0];
-    const areas = areaResult.rows[0];
-    
-    return {
-      total,
-      available,
-      unavailable: total - available,
-      minPrice: parseFloat(prices.min_price || 0),
-      maxPrice: parseFloat(prices.max_price || 0),
-      avgPrice: Math.round(parseFloat(prices.avg_price || 0)),
-      minArea: parseFloat(areas.min_area || 0),
-      maxArea: parseFloat(areas.max_area || 0),
-      avgArea: Math.round(parseFloat(areas.avg_area || 0) * 10) / 10
-    };
-  } finally {
-    client.release();
-  }
-}
-
-// Funkcja do zamykania połączenia
-export async function closePool() {
-  await pool.end();
+export function getFloorStats(floorId: number) {
+  const db = dbManager.getDatabase();
+  
+  const totalStmt = db.prepare('SELECT COUNT(*) as total FROM apartments WHERE floor_id = ?');
+  const availableStmt = db.prepare("SELECT COUNT(*) as available FROM apartments WHERE floor_id = ? AND status = 'available'");
+  const priceStmt = db.prepare('SELECT MIN(price) as min_price, MAX(price) as max_price, AVG(price) as avg_price FROM apartments WHERE floor_id = ? AND price IS NOT NULL');
+  const areaStmt = db.prepare('SELECT MIN(area) as min_area, MAX(area) as max_area, AVG(area) as avg_area FROM apartments WHERE floor_id = ?');
+  
+  const total = totalStmt.get(floorId) as { total: number };
+  const available = availableStmt.get(floorId) as { available: number };
+  const prices = priceStmt.get(floorId) as { min_price: number; max_price: number; avg_price: number };
+  const areas = areaStmt.get(floorId) as { min_area: number; max_area: number; avg_area: number };
+  
+  return {
+    total: total.total,
+    available: available.available,
+    unavailable: total.total - available.available,
+    minPrice: prices.min_price,
+    maxPrice: prices.max_price,
+    avgPrice: Math.round(prices.avg_price),
+    minArea: areas.min_area,
+    maxArea: areas.max_area,
+    avgArea: Math.round(areas.avg_area * 10) / 10
+  };
 }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Menu, X, Home, Info, MapPin, Building, Camera, Phone } from 'lucide-react'
+import { Menu, X, Info, MapPin, Building, Camera, FileText, Phone } from 'lucide-react'
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -17,7 +17,6 @@ const Navigation = () => {
   }, [])
 
   const navItems = [
-    { name: 'Home', href: '#hero', icon: Home },
     { name: 'O inwestycji', href: '#about', icon: Info },
     { name: 'Lokalizacja', href: '#location', icon: MapPin },
     { name: 'Oferta', href: '#offer', icon: Building },
@@ -33,6 +32,11 @@ const Navigation = () => {
     setIsOpen(false)
   }
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setIsOpen(false)
+  }
+
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
       isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
@@ -41,7 +45,10 @@ const Navigation = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <div className="relative w-60 h-20 transition-opacity duration-300">
+            <button 
+              onClick={scrollToTop}
+              className="relative w-60 h-20 transition-opacity duration-300 hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg"
+            >
               <Image
                 src="/logo_skowronkow.png"
                 alt="Osiedle Skowronków - Logo"
@@ -50,7 +57,7 @@ const Navigation = () => {
                 priority
                 sizes="(max-width: 768px) 240px, 320px"
               />
-            </div>
+            </button>
           </div>
 
           {/* Desktop Menu */}

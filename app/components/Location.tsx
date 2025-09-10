@@ -13,32 +13,32 @@ const Location = () => {
     {
       icon: ShoppingCart,
       title: 'SKLEP',
-      distance: '100m'
+      distance: '220m'
     },
     {
       icon: Church,
       title: 'KOŚCIÓŁ',
-      distance: '300m'
+      distance: '780m'
     },
     {
       icon: Baby,
       title: 'PRZEDSZKOLE',
-      distance: '50m'
+      distance: '680m'
     },
     {
       icon: BookOpen,
       title: 'SZKOŁA',
-      distance: '100m'
+      distance: '300m'
     },
     {
       icon: Stethoscope,
       title: 'LEKARZ',
-      distance: '100m'
+      distance: '800m'
     },
     {
       icon: Pill,
       title: 'APTEKA',
-      distance: '100m'
+      distance: '1250m'
     }
   ]
 

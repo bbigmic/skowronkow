@@ -3,7 +3,7 @@ import { getApartmentStats } from '@/lib/database';
 
 export async function GET() {
   try {
-    const stats = await getApartmentStats();
+    const stats = getApartmentStats();
     return NextResponse.json(stats);
   } catch (error) {
     console.error('Error fetching stats:', error);

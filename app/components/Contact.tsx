@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import Image from 'next/image'
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from 'lucide-react'
 import GoogleMap from './MapComponent'
 
@@ -11,27 +12,50 @@ const Contact = () => {
     interest: 'general'
   })
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically send the form data to your backend
-    console.log('Form submitted:', formData)
-    setIsSubmitted(true)
-    
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false)
-      setFormData({
-        phone: '',
-        message: '',
-        interest: 'general'
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       })
-    }, 3000)
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setIsSubmitted(true)
+        // Reset form after 5 seconds
+        setTimeout(() => {
+          setIsSubmitted(false)
+          setFormData({
+            phone: '',
+            message: '',
+            interest: 'general'
+          })
+        }, 5000)
+      } else {
+        setError(result.error || 'Wystąpił błąd podczas wysyłania wiadomości')
+      }
+    } catch (error) {
+      console.error('Błąd wysyłania formularza:', error)
+      setError('Wystąpił błąd połączenia. Spróbuj ponownie lub skontaktuj się telefonicznie.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
 
@@ -56,9 +80,11 @@ const Contact = () => {
             <div className="text-center mb-8">
 
               <div className="flex justify-center mb-6">
-                <img
+                <Image
                   src="/grupa-borys-logo.png"
                   alt="Logo Grupa Borys Deweloper"
+                  width={200}
+                  height={80}
                   className="h-20 w-auto object-contain"
                 />
               </div>
@@ -75,7 +101,7 @@ const Contact = () => {
             </div>
 
             <h3 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-                BIURO SPRZEDAŻY MIESZKAŃ I APARTAMENTÓW
+                BIURO SPRZEDAŻY MIESZKAŃ I ADRES DEWELOPERA
             </h3>
 
             {/* Skondensowane informacje kontaktowe */}
@@ -125,6 +151,12 @@ const Contact = () => {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Wyświetlanie błędów */}
+                {error && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p className="text-red-600 text-sm">{error}</p>
+                  </div>
+                )}
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
@@ -178,11 +210,30 @@ const Contact = () => {
 
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-300 transform hover:scale-105"
+                  disabled={isLoading}
+                  className={`w-full flex items-center justify-center space-x-2 font-semibold py-4 px-6 rounded-lg transition-all duration-300 ${
+                    isLoading 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-primary-600 hover:bg-primary-700 text-white transform hover:scale-105'
+                  }`}
                 >
-                  <Send size={20} />
-                  <span>Wyślij wiadomość</span>
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>Wysyłanie...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send size={20} />
+                      <span>Wyślij wiadomość</span>
+                    </>
+                  )}
                 </button>
+                
+                {/* Zgoda na kontakt */}
+                <p className="text-xs text-gray-500 text-center mt-3">
+                  Wysyłając tę wiadomość wyrażasz zgodę na kontakt telefoniczny
+                </p>
               </form>
             )}
           </div>

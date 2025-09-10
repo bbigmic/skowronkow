@@ -96,6 +96,13 @@ const Hero = () => {
     }
   }
 
+  const scrollToOffer = () => {
+    const aboutSection = document.querySelector('#offer')
+    if (aboutSection) {
+      aboutSection.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   return (
     <section id="hero" className="relative h-screen overflow-hidden">
       {/* Carousel Images */}
@@ -149,7 +156,7 @@ const Hero = () => {
             showButtons ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
           }`}>
             <button 
-              onClick={() => scrollToNext()}
+              onClick={() => scrollToOffer()}
               className="btn-primary"
             >
               Poznaj ofertę
@@ -212,7 +219,7 @@ const Hero = () => {
       </div>
 
       {/* Scroll Down Indicator */}
-      <div className="absolute bottom-8 right-8">
+      <div className="absolute bottom-8 right-8 z-40">
         <button
           onClick={scrollToNext}
           className="animate-bounce-slow text-white hover:text-secondary-300 transition-colors duration-300"

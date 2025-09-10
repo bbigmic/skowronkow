@@ -15,7 +15,7 @@ export async function GET(
       );
     }
 
-    const block = await getBlockById(blockId);
+    const block = getBlockById(blockId);
     if (!block) {
       return NextResponse.json(
         { error: 'Block not found' },
@@ -23,9 +23,9 @@ export async function GET(
       );
     }
 
-    const floors = await getFloorsByBlockId(blockId);
-    const apartments = await getApartmentsByBlockId(blockId);
-    const stats = await getBlockStats(blockId);
+    const floors = getFloorsByBlockId(blockId);
+    const apartments = getApartmentsByBlockId(blockId);
+    const stats = getBlockStats(blockId);
 
     return NextResponse.json({
       block,
