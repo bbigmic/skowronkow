@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import path from 'path';
 
 // Sprawdź czy jesteśmy na Vercel
-const isVercel = process.env.VERCEL === '1';
+const isVercel = process.env.VERCEL === '1' || process.env.POSTGRES_URL;
 
 // Typy dla bazy danych
 export interface Block {
@@ -85,10 +85,14 @@ export const dbManager = DatabaseManager.getInstance();
 let neonDb: any = null;
 if (isVercel) {
   try {
+    console.log('🔗 Łączę z Neon PostgreSQL...');
     neonDb = require('./database-neon');
+    console.log('✅ Neon PostgreSQL załadowany pomyślnie');
   } catch (error) {
-    console.error('Failed to load Neon database:', error);
+    console.error('❌ Failed to load Neon database:', error);
   }
+} else {
+  console.log('💾 Używam SQLite (lokalne środowisko)');
 }
 
 // Funkcje API dla bloków

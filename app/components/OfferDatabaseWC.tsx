@@ -302,7 +302,7 @@ const OfferDatabase = () => {
 
     // Fallback
     return [
-      { value: '85/87', label: 'Mieszkań dostępnych' },
+      { value: '85', label: 'Mieszkań' },
       { value: '1-5', label: 'Pokoje' },
       { value: '25-82', label: 'm² powierzchni' },
       { value: '2', label: 'Bloki mieszkalne' }
