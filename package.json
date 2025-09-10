@@ -4,17 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/vercel-build.js && next build",
+    "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "migrate": "node scripts/migrate_to_neon.js"
+    "lint": "next lint"
   },
   "dependencies": {
     "@googlemaps/react-wrapper": "^1.2.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/nodemailer": "^7.0.1",
     "@types/pg": "^8.15.5",
-    "@vercel/postgres": "^0.10.0",
     "better-sqlite3": "^12.2.0",
     "embla-carousel-react": "^8.0.0-rc23",
     "framer-motion": "^10.16.16",

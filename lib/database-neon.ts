@@ -1,6 +1,8 @@
 import { Pool } from 'pg';
 
 // Konfiguracja połączenia z Neon PostgreSQL
+console.log('🔗 POSTGRES_URL:', process.env.POSTGRES_URL ? 'Ustawiona' : 'BRAK');
+
 const pool = new Pool({
   connectionString: process.env.POSTGRES_URL,
   ssl: {

@@ -60,6 +60,7 @@ const OfferDatabase = () => {
   const [isImageLoading, setIsImageLoading] = useState(false)
   const [imageKey, setImageKey] = useState(0) // Key do wymuszenia re-renderu Image
   const [isInitializing, setIsInitializing] = useState(true) // Flaga do inicjalizacji
+  const [isViewChanging, setIsViewChanging] = useState(false) // Flaga przełączania widoków
 
   // Pobieramy dane z API
   const { blocks, loading: blocksLoading } = useBlocks()
@@ -93,6 +94,7 @@ const OfferDatabase = () => {
   }
 
   const handleBlockSelect = (blockId: number) => {
+    setIsViewChanging(true)
     setIsImageLoading(true)
     setSelectedBlockId(blockId)
     setCurrentView('block')
@@ -105,6 +107,7 @@ const OfferDatabase = () => {
   }
 
   const handleFloorSelect = (floorId: number) => {
+    setIsViewChanging(true)
     setIsImageLoading(true)
     setSelectedFloorId(floorId)
     setCurrentView('floor')
@@ -131,6 +134,7 @@ const OfferDatabase = () => {
         updateURL('floor', selectedBlockId || undefined, selectedFloorId || undefined)
       }
     } else if (currentView === 'floor') {
+      setIsViewChanging(true)
       setIsImageLoading(true)
       setCurrentView('block')
       setSelectedFloorId(null)
@@ -139,6 +143,7 @@ const OfferDatabase = () => {
         updateURL('block', selectedBlockId || undefined)
       }
     } else if (currentView === 'block') {
+      setIsViewChanging(true)
       setIsImageLoading(true)
       setCurrentView('overview')
       setSelectedBlockId(null)
@@ -151,10 +156,12 @@ const OfferDatabase = () => {
 
   const handleImageLoad = () => {
     setIsImageLoading(false)
+    setIsViewChanging(false)
   }
 
   const handleImageError = () => {
     setIsImageLoading(false)
+    setIsViewChanging(false)
   }
 
   // Funkcje do obsługi URL routing
@@ -224,15 +231,17 @@ const OfferDatabase = () => {
     }
   }, [apartment, selectedBlockId, selectedFloorId])
 
-  // Reset loader when view changes
-  useEffect(() => {
-    setIsImageLoading(true)
-  }, [currentView, selectedBlockId, selectedFloorId])
-
-  // Reset loader on initial load
+  // Reset loader on initial load only
   useEffect(() => {
     setIsImageLoading(true)
   }, [])
+
+  // Reset view changing flag after initialization
+  useEffect(() => {
+    if (!isInitializing) {
+      setIsViewChanging(false)
+    }
+  }, [isInitializing])
 
   const getBreadcrumb = () => {
     const parts = ['Inwestycja']
@@ -644,7 +653,7 @@ const OfferDatabase = () => {
             /* Image Map View */
             <div className="relative w-full">
               {/* Loader */}
-              {isImageLoading && (
+              {(isImageLoading || isViewChanging) && (
                 <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600 mx-auto mb-4"></div>
@@ -660,7 +669,7 @@ const OfferDatabase = () => {
                 width={1200}
                 height={800}
                 className={`w-full h-auto object-contain transition-opacity duration-300 ${
-                  isImageLoading ? 'opacity-0' : 'opacity-100'
+                  (isImageLoading || isViewChanging) ? 'opacity-0' : 'opacity-100'
                 }`}
                 priority
                 onLoad={handleImageLoad}
