@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getAllBlocks, getBlockById, getFloorsByBlockId, getApartmentsByBlockId, getBlockStats, getFloorById, getApartmentsByFloorId, getFloorStats, getAllApartments, getAvailableApartments, getApartmentById, getStorageRoomsByApartmentId, getApartmentStats } from '../database-hybrid';
 
 // Typy danych
 export interface Block {

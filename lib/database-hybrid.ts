@@ -35,6 +35,8 @@ export interface Apartment {
   pdf_path: string | null;
   storage_pdf_path: string | null;
   created_at: string;
+  floor_name?: string;
+  block_name?: string;
 }
 
 export interface StorageRoom {
@@ -45,7 +47,7 @@ export interface StorageRoom {
   pdf_path: string | null;
 }
 
-// Singleton dla połączenia z bazą danych
+// Singleton dla połączenia z bazą danych SQLite
 class DatabaseManager {
   private static instance: DatabaseManager;
   private db: Database.Database | null = null;
@@ -79,20 +81,20 @@ class DatabaseManager {
 // Funkcje pomocnicze do obsługi bazy danych
 export const dbManager = DatabaseManager.getInstance();
 
-// Import funkcji Vercel Postgres
-let vercelDb: any = null;
+// Import funkcji Neon PostgreSQL
+let neonDb: any = null;
 if (isVercel) {
   try {
-    vercelDb = require('./database-vercel');
+    neonDb = require('./database-neon');
   } catch (error) {
-    console.error('Failed to load Vercel database:', error);
+    console.error('Failed to load Neon database:', error);
   }
 }
 
 // Funkcje API dla bloków
 export async function getAllBlocks(): Promise<Block[]> {
-  if (isVercel && vercelDb) {
-    return await vercelDb.getAllBlocks();
+  if (isVercel && neonDb) {
+    return await neonDb.getAllBlocks();
   }
   
   const db = dbManager.getDatabase();
@@ -100,33 +102,53 @@ export async function getAllBlocks(): Promise<Block[]> {
   return stmt.all() as Block[];
 }
 
-export function getBlockById(id: number): Block | null {
+export async function getBlockById(id: number): Promise<Block | null> {
+  if (isVercel && neonDb) {
+    return await neonDb.getBlockById(id);
+  }
+  
   const db = dbManager.getDatabase();
   const stmt = db.prepare('SELECT * FROM blocks WHERE id = ?');
   return stmt.get(id) as Block | null;
 }
 
-export function getBlockByName(name: string): Block | null {
+export async function getBlockByName(name: string): Promise<Block | null> {
+  if (isVercel && neonDb) {
+    return await neonDb.getBlockByName(name);
+  }
+  
   const db = dbManager.getDatabase();
   const stmt = db.prepare('SELECT * FROM blocks WHERE name = ?');
   return stmt.get(name) as Block | null;
 }
 
 // Funkcje API dla pięter
-export function getFloorsByBlockId(blockId: number): Floor[] {
+export async function getFloorsByBlockId(blockId: number): Promise<Floor[]> {
+  if (isVercel && neonDb) {
+    return await neonDb.getFloorsByBlockId(blockId);
+  }
+  
   const db = dbManager.getDatabase();
   const stmt = db.prepare('SELECT * FROM floors WHERE block_id = ? ORDER BY floor_number');
   return stmt.all(blockId) as Floor[];
 }
 
-export function getFloorById(id: number): Floor | null {
+export async function getFloorById(id: number): Promise<Floor | null> {
+  if (isVercel && neonDb) {
+    return await neonDb.getFloorById(id);
+  }
+  
   const db = dbManager.getDatabase();
   const stmt = db.prepare('SELECT * FROM floors WHERE id = ?');
   return stmt.get(id) as Floor | null;
 }
 
 // Funkcje API dla mieszkań
-export function getAllApartments(): Apartment[] {
+export async function getAllApartments(): Promise<Apartment[]> {
+  if (isVercel && neonDb) {
+    return await neonDb.getAllApartments();
+  }
+  
   const db = dbManager.getDatabase();
   const stmt = db.prepare(`
     SELECT a.*, f.floor_name, b.name as block_name
@@ -138,7 +160,11 @@ export function getAllApartments(): Apartment[] {
   return stmt.all() as Apartment[];
 }
 
-export function getApartmentsByBlockId(blockId: number): Apartment[] {
+export async function getApartmentsByBlockId(blockId: number): Promise<Apartment[]> {
+  if (isVercel && neonDb) {
+    return await neonDb.getApartmentsByBlockId(blockId);
+  }
+  
   const db = dbManager.getDatabase();
   const stmt = db.prepare(`
     SELECT a.*, f.floor_name, b.name as block_name
@@ -151,7 +177,11 @@ export function getApartmentsByBlockId(blockId: number): Apartment[] {
   return stmt.all(blockId) as Apartment[];
 }
 
-export function getApartmentsByFloorId(floorId: number): Apartment[] {
+export async function getApartmentsByFloorId(floorId: number): Promise<Apartment[]> {
+  if (isVercel && neonDb) {
+    return await neonDb.getApartmentsByFloorId(floorId);
+  }
+  
   const db = dbManager.getDatabase();
   const stmt = db.prepare(`
     SELECT a.*, f.floor_name, b.name as block_name
@@ -164,7 +194,11 @@ export function getApartmentsByFloorId(floorId: number): Apartment[] {
   return stmt.all(floorId) as Apartment[];
 }
 
-export function getApartmentById(id: number): Apartment | null {
+export async function getApartmentById(id: number): Promise<Apartment | null> {
+  if (isVercel && neonDb) {
+    return await neonDb.getApartmentById(id);
+  }
+  
   const db = dbManager.getDatabase();
   const stmt = db.prepare(`
     SELECT a.*, f.floor_name, b.name as block_name
@@ -176,7 +210,11 @@ export function getApartmentById(id: number): Apartment | null {
   return stmt.get(id) as Apartment | null;
 }
 
-export function getApartmentByNumber(blockId: number, apartmentNumber: string): Apartment | null {
+export async function getApartmentByNumber(blockId: number, apartmentNumber: string): Promise<Apartment | null> {
+  if (isVercel && neonDb) {
+    return await neonDb.getApartmentByNumber(blockId, apartmentNumber);
+  }
+  
   const db = dbManager.getDatabase();
   const stmt = db.prepare(`
     SELECT a.*, f.floor_name, b.name as block_name
@@ -188,7 +226,11 @@ export function getApartmentByNumber(blockId: number, apartmentNumber: string): 
   return stmt.get(blockId, apartmentNumber) as Apartment | null;
 }
 
-export function getAvailableApartments(): Apartment[] {
+export async function getAvailableApartments(): Promise<Apartment[]> {
+  if (isVercel && neonDb) {
+    return await neonDb.getAvailableApartments();
+  }
+  
   const db = dbManager.getDatabase();
   const stmt = db.prepare(`
     SELECT a.*, f.floor_name, b.name as block_name
@@ -202,14 +244,22 @@ export function getAvailableApartments(): Apartment[] {
 }
 
 // Funkcje API dla komórek
-export function getStorageRoomsByApartmentId(apartmentId: number): StorageRoom[] {
+export async function getStorageRoomsByApartmentId(apartmentId: number): Promise<StorageRoom[]> {
+  if (isVercel && neonDb) {
+    return await neonDb.getStorageRoomsByApartmentId(apartmentId);
+  }
+  
   const db = dbManager.getDatabase();
   const stmt = db.prepare('SELECT * FROM storage_rooms WHERE apartment_id = ?');
   return stmt.all(apartmentId) as StorageRoom[];
 }
 
 // Funkcje statystyk
-export function getApartmentStats() {
+export async function getApartmentStats() {
+  if (isVercel && neonDb) {
+    return await neonDb.getApartmentStats();
+  }
+  
   const db = dbManager.getDatabase();
   
   const totalStmt = db.prepare('SELECT COUNT(*) as total FROM apartments');
@@ -235,7 +285,11 @@ export function getApartmentStats() {
   };
 }
 
-export function getBlockStats(blockId: number) {
+export async function getBlockStats(blockId: number) {
+  if (isVercel && neonDb) {
+    return await neonDb.getBlockStats(blockId);
+  }
+  
   const db = dbManager.getDatabase();
   
   const totalStmt = db.prepare('SELECT COUNT(*) as total FROM apartments WHERE block_id = ?');
@@ -264,7 +318,11 @@ export function getBlockStats(blockId: number) {
   };
 }
 
-export function getFloorStats(floorId: number) {
+export async function getFloorStats(floorId: number) {
+  if (isVercel && neonDb) {
+    return await neonDb.getFloorStats(floorId);
+  }
+  
   const db = dbManager.getDatabase();
   
   const totalStmt = db.prepare('SELECT COUNT(*) as total FROM apartments WHERE floor_id = ?');

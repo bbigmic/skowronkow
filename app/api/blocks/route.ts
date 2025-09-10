@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { getAllBlocks } from '@/lib/database';
+import { getAllBlocks } from '@/lib/database-hybrid';
 
 export async function GET() {
   try {
-    const blocks = getAllBlocks();
+    const blocks = await getAllBlocks();
     return NextResponse.json(blocks);
   } catch (error) {
     console.error('Error fetching blocks:', error);

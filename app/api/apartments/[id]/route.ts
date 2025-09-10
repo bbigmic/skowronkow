@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getApartmentById, getStorageRoomsByApartmentId } from '@/lib/database';
+import { getApartmentById, getStorageRoomsByApartmentId } from '@/lib/database-hybrid';
 
 export async function GET(
   request: Request,
@@ -15,7 +15,7 @@ export async function GET(
       );
     }
 
-    const apartment = getApartmentById(apartmentId);
+    const apartment = await getApartmentById(apartmentId);
     if (!apartment) {
       return NextResponse.json(
         { error: 'Apartment not found' },
@@ -23,7 +23,7 @@ export async function GET(
       );
     }
 
-    const storageRooms = getStorageRoomsByApartmentId(apartmentId);
+    const storageRooms = await getStorageRoomsByApartmentId(apartmentId);
 
     return NextResponse.json({
       apartment,
