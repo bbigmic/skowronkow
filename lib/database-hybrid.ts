@@ -5,7 +5,6 @@ import path from 'path';
 const isVercel = process.env.VERCEL === '1' || process.env.POSTGRES_URL;
 console.log('🌍 VERCEL:', process.env.VERCEL);
 console.log('🔗 POSTGRES_URL:', process.env.POSTGRES_URL ? 'Ustawiona' : 'BRAK');
-console.log('🎯 isVercel:', isVercel);
 
 // Typy dla bazy danych
 export interface Block {

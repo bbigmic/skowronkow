@@ -63,10 +63,10 @@ const Hero = () => {
   // Initial load animation - sequential appearance
   useEffect(() => {
     const timers = [
-      setTimeout(() => setShowSubtitle(true), 300),    // Subtitle first
-      setTimeout(() => setShowTitle(true), 1000),      // Title after 700ms
-      setTimeout(() => setShowDescription(true), 1800), // Description after 800ms
-      setTimeout(() => setShowButtons(true), 2600),    // Buttons last after 800ms
+      setTimeout(() => setShowSubtitle(true), 200),    // Subtitle first
+      setTimeout(() => setShowTitle(true), 500),      // Title after 700ms
+      setTimeout(() => setShowDescription(true), 800), // Description after 800ms
+      setTimeout(() => setShowButtons(true), 1600),    // Buttons last after 800ms
     ]
     return () => timers.forEach(clearTimeout)
   }, [])
