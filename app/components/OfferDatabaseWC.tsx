@@ -330,9 +330,16 @@ const OfferDatabase = () => {
         { value: blockStats.total.toString(), label: 'Mieszkań w bloku' },
         { value: floors.length.toString(), label: 'Pięter' },
         { value: `${Math.floor(blockStats.minArea)}-${Math.ceil(blockStats.maxArea)}`, label: 'm² powierzchni' },
-        { value: `${Math.round(blockStats.minPrice / 1000)}-${Math.round(blockStats.maxPrice / 1000)}k`, label: 'Cena (tys. zł)' }
+        { value: `od 192k`, label: 'Cena (tys. zł)' }
       ]
     } else if (currentView === 'floor' && floorStats && floor) {
+      // Dla piwnicy pokazujemy tylko nazwę piętra
+      if (floor.floor_name === 'piwnica') {
+        return [
+          { value: getFloorName(floor.floor_name), label: 'Piętro' }
+        ]
+      }
+      // Dla innych pięter pokazujemy 3 statystyki
       return [
         { value: floorStats.total.toString(), label: 'Mieszkań na tym piętrze' },
         { value: `${Math.floor(floorStats.minArea)}-${Math.ceil(floorStats.maxArea)}`, label: 'm² powierzchni' },
@@ -1042,7 +1049,7 @@ const OfferDatabase = () => {
               })}
 
               {/* Tytuł "Wybierz mieszkanie" na zdjęciu - w lewym dolnym rogu */}
-              {currentView === 'floor' && (
+              {currentView === 'floor' && floor?.floor_name !== 'piwnica' && (
                 <div className="absolute bottom-4 sm:bottom-8 left-4 sm:left-8 pointer-events-none">
                   <div className="bg-white/95 backdrop-blur-sm rounded-lg sm:rounded-xl px-4 sm:px-6 py-2 sm:py-3 shadow-lg">
                     <h3 className="text-lg sm:text-xl md:text-2xl lg:text-2xl font-bold text-gray-900 text-center whitespace-nowrap">
@@ -1201,7 +1208,9 @@ const OfferDatabase = () => {
 
           
           <div className={`grid gap-8 mt-16 ${
-            currentView === 'apartment' || currentView === 'floor' ? 'md:grid-cols-3' : 'md:grid-cols-4'
+            currentView === 'apartment' ? 'md:grid-cols-3' : 
+            currentView === 'floor' && floor?.floor_name === 'piwnica' ? 'md:grid-cols-1' :
+            currentView === 'floor' ? 'md:grid-cols-3' : 'md:grid-cols-4'
           }`}>
             {getStatsForCurrentView().map((stat, index) => (
               <div key={index} className="text-center">
