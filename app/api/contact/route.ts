@@ -68,7 +68,7 @@ Data: ${new Date().toLocaleString('pl-PL')}
           </div>
           
           <div style="background-color: #e9ecef; padding: 15px; border-radius: 8px; font-size: 12px; color: #666;">
-            <p style="margin: 0;">Wiadomość wysłana z formularza kontaktowego na stronie osiedle-skowronkow.com</p>
+            <p style="margin: 0;">Wiadomość wysłana z formularza kontaktowego na stronie skowronkow.com</p>
             <p style="margin: 5px 0 0 0;">Data: ${new Date().toLocaleString('pl-PL')}</p>
           </div>
         </div>
