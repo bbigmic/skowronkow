@@ -60,6 +60,9 @@ const OfferDatabase = () => {
   const [isImageLoading, setIsImageLoading] = useState(false)
   const [imageKey, setImageKey] = useState(0) // Key do wymuszenia re-renderu Image
   const [isInitializing, setIsInitializing] = useState(true) // Flaga do inicjalizacji
+  const [showImage, setShowImage] = useState(false) // Kontrola widoczności obrazu
+  const [previousImageSrc, setPreviousImageSrc] = useState<string | null>(null) // Poprzedni obraz
+  const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set()) // Preloaded images
 
   // Pobieramy dane z API
   const { blocks, loading: blocksLoading } = useBlocks()
@@ -93,6 +96,11 @@ const OfferDatabase = () => {
   }
 
   const handleBlockSelect = (blockId: number) => {
+    // Zapisz poprzedni obraz i ukryj aktualny
+    const currentImageSrc = getImagePath()
+    setPreviousImageSrc(currentImageSrc)
+    setShowImage(false)
+    
     // Loader tylko przy przejściu w przód (nowy obraz)
     setIsImageLoading(true)
     setSelectedBlockId(blockId)
@@ -100,18 +108,37 @@ const OfferDatabase = () => {
     setSelectedFloorId(null)
     setSelectedApartmentId(null)
     setImageKey(prev => prev + 1)
+    
+    // Preload następnego obrazu po zmianie stanu
+    setTimeout(() => {
+      const nextImageSrc = getImagePath()
+      preloadImage(nextImageSrc)
+    }, 0)
+    
     if (!isInitializing) {
       updateURL('block', blockId)
     }
   }
 
   const handleFloorSelect = (floorId: number) => {
+    // Zapisz poprzedni obraz i ukryj aktualny
+    const currentImageSrc = getImagePath()
+    setPreviousImageSrc(currentImageSrc)
+    setShowImage(false)
+    
     // Loader tylko przy przejściu w przód (nowy obraz)
     setIsImageLoading(true)
     setSelectedFloorId(floorId)
     setCurrentView('floor')
     setSelectedApartmentId(null)
     setImageKey(prev => prev + 1)
+    
+    // Preload następnego obrazu po zmianie stanu
+    setTimeout(() => {
+      const nextImageSrc = getImagePath()
+      preloadImage(nextImageSrc)
+    }, 0)
+    
     if (!isInitializing) {
       updateURL('floor', selectedBlockId || undefined, floorId)
     }
@@ -127,6 +154,7 @@ const OfferDatabase = () => {
   }
 
   const goBack = () => {
+    // Przy powrocie nie ukrywamy obrazu - jest w pamięci
     if (currentView === 'apartment') {
       setCurrentView('floor')
       setSelectedApartmentId(null)
@@ -152,10 +180,28 @@ const OfferDatabase = () => {
 
   const handleImageLoad = () => {
     setIsImageLoading(false)
+    // Opóźnione pokazanie obrazu dla płynnej animacji
+    setTimeout(() => {
+      setShowImage(true)
+      setPreviousImageSrc(null)
+    }, 100)
   }
 
   const handleImageError = () => {
     setIsImageLoading(false)
+    setShowImage(true)
+    setPreviousImageSrc(null)
+  }
+
+  // Preload obrazu
+  const preloadImage = (src: string) => {
+    if (preloadedImages.has(src)) return
+    
+    const img = new window.Image()
+    img.onload = () => {
+      setPreloadedImages(prev => new Set(Array.from(prev).concat(src)))
+    }
+    img.src = src
   }
 
   // Funkcje do obsługi URL routing
@@ -190,6 +236,9 @@ const OfferDatabase = () => {
       // Ustaw loader tylko przy inicjalizacji z URL
       if (view === 'overview' || view === 'block' || view === 'floor') {
         setIsImageLoading(true)
+        setShowImage(false)
+      } else {
+        setShowImage(true)
       }
 
       if (view === 'apartment' && apartmentId) {
@@ -286,14 +335,12 @@ const OfferDatabase = () => {
     } else if (currentView === 'floor' && floorStats && floor) {
       return [
         { value: floorStats.total.toString(), label: 'Mieszkań na tym piętrze' },
-        { value: '1-5', label: 'Pokoje' },
         { value: `${Math.floor(floorStats.minArea)}-${Math.ceil(floorStats.maxArea)}`, label: 'm² powierzchni' },
         { value: getFloorName(floor.floor_name), label: 'Piętro' }
       ]
     } else if (currentView === 'apartment' && apartment) {
       return [
         { value: apartment.area.toString(), label: 'Powierzchnia (m²)' },
-        { value: apartment.rooms.toString(), label: 'Pokoje' },
         { value: getFloorName(apartment.floor_name || ''), label: 'Piętro' },
         { value: apartment.block_name || '', label: 'Blok' }
       ]
@@ -642,24 +689,44 @@ const OfferDatabase = () => {
           ) : (
             /* Image Map View */
             <div className="relative w-full">
-              {/* Loader */}
+              {/* Skeleton Loader */}
               {isImageLoading && (
-                <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10">
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center z-10">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600 mx-auto mb-4"></div>
-                    <p className="text-gray-600 font-medium">Ładowanie mapy...</p>
+                    {/* Skeleton animation */}
+                    <div className="relative">
+                      <div className="w-16 h-16 bg-gray-200 rounded-full animate-pulse mx-auto mb-4"></div>
+                      <div className="absolute inset-0 w-16 h-16 border-2 border-primary-200 border-t-primary-600 rounded-full animate-spin mx-auto"></div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-32 mx-auto animate-pulse"></div>
+                      <div className="h-3 bg-gray-100 rounded w-24 mx-auto animate-pulse"></div>
+                    </div>
                   </div>
                 </div>
               )}
               
+              {/* Poprzedni obraz - fade out */}
+              {previousImageSrc && (
+                <Image
+                  src={previousImageSrc}
+                  alt="Poprzednia mapa"
+                  width={1200}
+                  height={800}
+                  className="absolute inset-0 w-full h-auto object-contain opacity-30 transition-opacity duration-500"
+                  priority={false}
+                />
+              )}
+              
+              {/* Główny obraz - fade in */}
               <Image
                 key={imageKey}
                 src={getImagePath()}
                 alt="Mapa osiedla"
                 width={1200}
                 height={800}
-                className={`w-full h-auto object-contain transition-opacity duration-300 ${
-                  isImageLoading ? 'opacity-0' : 'opacity-100'
+                className={`w-full h-auto object-contain transition-all duration-500 ${
+                  showImage ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
                 }`}
                 priority
                 onLoad={handleImageLoad}
@@ -1133,7 +1200,9 @@ const OfferDatabase = () => {
 
 
           
-          <div className="grid md:grid-cols-4 gap-8 mt-16">
+          <div className={`grid gap-8 mt-16 ${
+            currentView === 'apartment' || currentView === 'floor' ? 'md:grid-cols-3' : 'md:grid-cols-4'
+          }`}>
             {getStatsForCurrentView().map((stat, index) => (
               <div key={index} className="text-center">
                 <div className="text-3xl font-bold text-primary-600 mb-2">{stat.value}</div>
